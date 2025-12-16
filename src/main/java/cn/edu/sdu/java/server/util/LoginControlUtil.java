@@ -90,7 +90,7 @@ public class LoginControlUtil {
         Map<String,Object> data = new HashMap<>();
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            ImageIO.write(buffImg, "jpeg", out);
+            ImageIO.write(buffImg, "png", out);
             out.close();
             String imgStr = "data:image/png;base64,";
             String s = new String(Base64.getEncoder().encode(out.toByteArray()));
