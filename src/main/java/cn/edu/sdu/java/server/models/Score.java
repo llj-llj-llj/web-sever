@@ -16,6 +16,7 @@ import lombok.Setter;
 @Entity
 @Table(	name = "score",
         uniqueConstraints = {
+            @UniqueConstraint(columnNames = {"personId", "courseId", "examType"})
         })
 public class Score {
     @Id
@@ -32,5 +33,6 @@ public class Score {
 
     private Integer mark;
     private Integer ranking;
+    private String examType; // 考试类型：期中考试、期末考试、平时成绩、模拟考试
 
 }
