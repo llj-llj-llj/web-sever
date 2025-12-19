@@ -1,10 +1,10 @@
 package cn.edu.sdu.java.server.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Student学生表实体类 保存每个学生的信息，
@@ -14,8 +14,6 @@ import jakarta.validation.constraints.Size;
  * String className 班级
  *
  */
-import lombok.Getter;
-import lombok.Setter;
 @Getter
 @Setter
 @Entity
@@ -27,8 +25,8 @@ public class Student {
     private Integer personId;
 
     @OneToOne
+    @MapsId
     @JoinColumn(name="personId")
-    @JsonIgnore
     private Person person;
 
     @Size(max = 20)
@@ -37,4 +35,37 @@ public class Student {
     @Size(max = 50)
     private String className;
 
+    public Integer getPersonId() {
+        return personId;
+    }
+
+    public Person getPerson() {
+        return person;
+    }
+
+    public String getMajor() {
+        return major;
+    }
+
+    public String getClassName() {
+        return className;
+    }
+
+    public void setPersonId(Integer personId) {
+        this.personId = personId;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
+    }
+
+    public void setMajor(String major) {
+        this.major = major;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
 }
+
+

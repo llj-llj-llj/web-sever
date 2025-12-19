@@ -29,6 +29,7 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        System.out.println(">>> /auth/login hit");
         return authService.authenticateUser(loginRequest);
     }
     @PostMapping("/getValidateCode")

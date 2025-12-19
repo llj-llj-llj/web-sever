@@ -25,6 +25,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.AuthenticationException;
+// 其他 import 保持不变
 
 @Service
 public class AuthService {
@@ -45,21 +48,26 @@ public class AuthService {
         this.jwtService = jwtService;
         this.encoder = encoder;
     }
-    public ResponseEntity<?> authenticateUser(LoginRequest loginRequest) {
-
+    /*public ResponseEntity<?> authenticateUser(LoginRequest loginRequest) {
+        System.out.println("0");
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-
+        System.out.println("1");
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
+        System.out.println("2");
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        System.out.println("3");
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .toList();
+        System.out.println("4");
         Optional<User> op= userRepository.findByUserName(loginRequest.getUsername());
+        System.out.println("5");
         if(op.isPresent()) {
             User user= op.get();
+            System.out.println("6");
             user.setLastLoginTime(DateTimeTool.parseDateTime(new Date()));
+            System.out.println("7");
             Integer count = user.getLoginCount();
             if (count == null)
                 count = 1;
@@ -73,7 +81,63 @@ public class AuthService {
                 userDetails.getUsername(),
                 userDetails.getPerName(),
                 roles.getFirst()));
+    }*/
+
+
+    public ResponseEntity<?> authenticateUser(LoginRequest loginRequest) {
+        System.out.println("0: before authenticate, username=" + loginRequest.getUsername());
+
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsername(),
+                            loginRequest.getPassword()
+                    )
+            );
+
+            System.out.println("1: after authenticate");
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+            List<String> roles = userDetails.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .toList();
+
+            Optional<User> op = userRepository.findByUserName(loginRequest.getUsername());
+            if (op.isPresent()) {
+                User user = op.get();
+                user.setLastLoginTime(DateTimeTool.parseDateTime(new Date()));
+                Integer count = user.getLoginCount();
+                user.setLoginCount(count == null ? 1 : (count + 1));
+                userRepository.save(user);
+            }
+
+            String jwt = jwtService.generateToken(userDetails);
+            return ResponseEntity.ok(new JwtResponse(jwt,
+                    userDetails.getId(),
+                    userDetails.getUsername(),
+                    userDetails.getPerName(),
+                    roles.isEmpty() ? "" : roles.getFirst()));
+
+        } catch (AuthenticationException e) {
+            // 关键：把真实原因打印出来
+            System.out.println("!!! AUTH FAILED: " + e.getClass().getSimpleName() + " msg=" + e.getMessage());
+            e.printStackTrace();
+
+            // 登录失败更合理是 401（未认证），而不是 403（已认证但没权限）
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Login failed: " + e.getClass().getSimpleName());
+        } catch (Exception e) {
+            // 万一你自定义 provider / 取用户信息等地方抛了别的异常
+            System.out.println("!!! LOGIN ERROR: " + e.getClass().getName() + " msg=" + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Login error: " + e.getClass().getSimpleName());
+        }
     }
+
     public DataResponse getValidateCode(DataRequest dataRequest) {
         return CommonMethod.getReturnData(LoginControlUtil.getInstance().getValidateCodeDataMap());
     }

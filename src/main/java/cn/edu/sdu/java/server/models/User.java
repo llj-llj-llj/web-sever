@@ -19,26 +19,30 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(	name = "user",
+@Table(
+        name = "user",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = "userName"),
-        })
+                @UniqueConstraint(columnNames = "userName")
+        }
+)
 public class User {
+
     @Id
     private Integer personId;
 
-    @ManyToOne()
+    // ⭐ 关键：主键共享
+    @OneToOne
+    @MapsId
+    @JoinColumn(name = "personId")
+    private Person person;
+
+    @ManyToOne
     @JoinColumn(name = "userTypeId")
     private UserType userType;
-
-    @OneToOne
-    @JoinColumn(name="personId")
-    private Person person;
 
     @NotBlank
     @Size(max = 20)
     private String userName;
-
 
     @NotBlank
     @Size(max = 60)
@@ -48,6 +52,6 @@ public class User {
     @Size(max = 20)
     private String lastLoginTime;
     @Size(max = 20)
-    private String  createTime;
+    private String createTime;
     private Integer creatorId;
 }

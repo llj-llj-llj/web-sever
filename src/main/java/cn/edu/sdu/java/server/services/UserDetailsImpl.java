@@ -37,16 +37,27 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     public static UserDetailsImpl build(User user) {
+
         List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(user.getUserType().getName()));
+
+        // ⭐ 兜底角色（非常关键）
+        String roleName = "ROLE_STUDENT";
+
+        if (user.getUserType() != null && user.getUserType().getName() != null) {
+            roleName = user.getUserType().getName();
+        }
+
+        authorities.add(new SimpleGrantedAuthority(roleName));
 
         return new UserDetailsImpl(
                 user.getPersonId(),
                 user.getUserName(),
                 user.getPassword(),
                 user.getPerson().getName(),
-                authorities);
+                authorities
+        );
     }
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
