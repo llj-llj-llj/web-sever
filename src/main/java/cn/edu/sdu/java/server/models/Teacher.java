@@ -27,4 +27,35 @@ public class Teacher {
     @Size(max = 10)
     private String degree;
 
+    public Integer getPersonId() {
+        return personId;
+    }
+
+    public Person getPerson() {
+        return person;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDegree() {
+        return degree;
+    }
+
+    public void setPersonId(Integer personId) {
+        this.personId = personId;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setDegree(String degree) {
+        this.degree = degree;
+    }
 }
