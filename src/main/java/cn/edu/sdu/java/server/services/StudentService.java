@@ -21,6 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -140,7 +143,20 @@ public class StudentService {
         Student s = null;
         Person p;
         User u;
-        Optional<Student> op;
+
+        // 获取当前用户是否是学生
+        boolean isStudent = false;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if(authentication != null && authentication.getAuthorities() != null){
+            for(GrantedAuthority ga : authentication.getAuthorities()){
+                if("ROLE_STUDENT".equals(ga.getAuthority())){
+                    isStudent = true;
+                    break;
+                }
+            }
+        }
+
+        Optional<Student> op= (personId != null) ? studentRepository.findById(personId) : Optional.empty();
         boolean isNew = false;
         if (personId != null) {
             op = studentRepository.findById(personId);  //查询对应数据库中主键为id的值的实体对象
@@ -154,7 +170,27 @@ public class StudentService {
                 return CommonMethod.getReturnMessageError("新学号已经存在，不能添加或修改！");
             }
         }
-        if (s == null) {
+
+        // ====== 查询或新建 Student ======
+        if(op.isPresent()){
+            s = op.get();
+        } else {
+            if(isStudent){
+                return CommonMethod.getReturnMessageError("学生无权限新增学生信息");
+            }
+            // 管理员新增逻辑
+            Person pNew = new Person();
+            pNew.setNum(CommonMethod.getString(form,"num"));
+            pNew.setName(CommonMethod.getString(form,"name"));
+            pNew.setDept(CommonMethod.getString(form,"dept"));
+            pNew.setCard(CommonMethod.getString(form,"card"));
+            pNew.setGender(CommonMethod.getString(form,"gender"));
+            pNew.setBirthday(CommonMethod.getString(form,"birthday"));
+            personRepository.save(pNew);
+
+            s = new Student();
+            s.setPersonId(pNew.getPersonId());
+            studentRepository.save(s);
             p = new Person();
             p.setNum(num);
             p.setType("1");
@@ -173,9 +209,10 @@ public class StudentService {
             s.setPersonId(personId);
             studentRepository.saveAndFlush(s);  //插入新的Student记录
             isNew = true;
-        } else {
-            p = s.getPerson();
         }
+            p = s.getPerson();
+
+
         personId = p.getPersonId();
         if (!num.equals(p.getNum())) {   //如果人员编号变化，修改人员编号和登录账号
             Optional<User> uOp = userRepository.findByPersonPersonId(personId);
@@ -186,11 +223,19 @@ public class StudentService {
             }
             p.setNum(num);  //设置属性
         }
-        p.setName(CommonMethod.getString(form, "name"));
-        p.setDept(CommonMethod.getString(form, "dept"));
-        p.setCard(CommonMethod.getString(form, "card"));
-        p.setGender(CommonMethod.getString(form, "gender"));
-        p.setBirthday(CommonMethod.getString(form, "birthday"));
+
+        // 学生不能修改基础信息
+        if(!isStudent) {
+            p.setNum(CommonMethod.getString(form, "num"));
+            p.setName(CommonMethod.getString(form, "name"));
+            p.setDept(CommonMethod.getString(form, "dept"));
+            p.setCard(CommonMethod.getString(form, "card"));
+            p.setGender(CommonMethod.getString(form, "gender"));
+            p.setBirthday(CommonMethod.getString(form, "birthday"));
+            s.setMajor(CommonMethod.getString(form, "major"));
+            s.setClassName(CommonMethod.getString(form, "className"));
+        }
+        // 学生可以修改其他字段，管理员可以修改所有字段
         p.setEmail(CommonMethod.getString(form, "email"));
         p.setPhone(CommonMethod.getString(form, "phone"));
         p.setAddress(CommonMethod.getString(form, "address"));

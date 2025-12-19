@@ -66,7 +66,7 @@ public class StudentController {
      */
 
     @PostMapping("/getStudentInfo")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')or hasRole('STUDENT')")
     public DataResponse getStudentInfo(@Valid @RequestBody DataRequest dataRequest) {
         return studentService.getStudentInfo(dataRequest);
     }
@@ -80,7 +80,7 @@ public class StudentController {
      * @return 新建修改学生的主键 student_id 返回前端
      */
     @PostMapping("/studentEditSave")
-    @PreAuthorize(" hasRole('ADMIN')")
+    @PreAuthorize(" hasRole('ADMIN')or hasRole('STUDENT')")
     public DataResponse studentEditSave(@Valid @RequestBody DataRequest dataRequest) {
         return studentService.studentEditSave(dataRequest);
     }
