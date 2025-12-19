@@ -42,4 +42,108 @@ public class StudentLeave {
     private Date adminTime;
     @Size(max=200)
     private String attachment;
+
+    public Student getStudent() {
+        return student;
+    }
+
+    public Teacher getTeacher() {
+        return teacher;
+    }
+
+    public Integer getStudentLeaveId() {
+        return studentLeaveId;
+    }
+
+    public Integer getState() {
+        return state;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public String getLeaveStartDate() {
+        return leaveStartDate;
+    }
+
+    public String getLeaveEndDate() {
+        return leaveEndDate;
+    }
+
+    public String getAttachment() {
+        return attachment;
+    }
+
+    public String getAdminComment() {
+        return adminComment;
+    }
+
+    public String getTeacherComment() {
+        return teacherComment;
+    }
+
+    public Date getApplyTime() {
+        return applyTime;
+    }
+
+    public Date getAdminTime() {
+        return adminTime;
+    }
+
+    public Date getTeacherTime() {
+        return teacherTime;
+    }
+
+    public void setState(Integer state) {
+        this.state = state;
+    }
+
+    public void setApplyTime(Date applyTime) {
+        this.applyTime = applyTime;
+    }
+
+    public void setTeacherComment(String teacherComment) {
+        this.teacherComment = teacherComment;
+    }
+
+    public void setAdminComment(String adminComment) {
+        this.adminComment = adminComment;
+    }
+
+    public void setStudent(Student student) {
+        this.student = student;
+    }
+
+    public void setTeacher(Teacher teacher) {
+        this.teacher = teacher;
+    }
+
+    public void setLeaveStartDate(String leaveStartDate) {
+        this.leaveStartDate = leaveStartDate;
+    }
+
+    public void setLeaveEndDate(String leaveEndDate) {
+        this.leaveEndDate = leaveEndDate;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
+
+    public void setAttachment(String attachment) {
+        this.attachment = attachment;
+    }
+
+    public void setAdminTime(Date adminTime) {
+        this.adminTime = adminTime;
+    }
+
+    public void setTeacherTime(Date teacherTime) {
+        this.teacherTime = teacherTime;
+    }
+
+    public void setStudentLeaveId(Integer studentLeaveId) {
+        this.studentLeaveId = studentLeaveId;
+    }
 }
