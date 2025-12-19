@@ -98,7 +98,10 @@ public class PdfGenerationService {
             }
             
             // 查询学生成绩数据
-            List<Score> scores = scoreRepository.findByStudentPersonPersonIdOrderByExamTypeAscCourseNameAsc(personId);
+            //List<Score> scores = scoreRepository.findByStudentPersonPersonIdOrderByExamTypeAscCourseNameAsc(personId);
+            List<Score> scores =
+                    scoreRepository.findByStudentPersonIdOrderByExamTypeAscCourseNameAsc(personId);
+
             if (scores.isEmpty()) {
                 return CommonMethod.getReturnMessageError("没有找到该学生的成绩数据");
             }

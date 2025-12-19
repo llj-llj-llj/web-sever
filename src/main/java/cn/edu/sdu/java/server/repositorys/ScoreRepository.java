@@ -28,7 +28,7 @@ public interface ScoreRepository extends JpaRepository<Score,Integer> {
 
     // 新增：检查重复性 - studentId + courseId + examType 唯一性检查
     boolean existsByStudentPersonIdAndCourseCourseIdAndExamType(Integer personId, Integer courseId, String examType);
-
+/*
     // 新增：按考试类型查询成绩
     @Query("FROM Score WHERE (:personId = 0 OR student.personId = :personId) " +
            "AND (:courseId = 0 OR course.courseId = :courseId) " +
@@ -44,6 +44,38 @@ public interface ScoreRepository extends JpaRepository<Score,Integer> {
     Page<Score> findByStudentCourseAndExamType(@Param("personId") Integer personId, 
                                                @Param("courseId") Integer courseId, 
                                                @Param("examType") String examType, 
+                                               Pageable pageable);
+*/
+
+    // 按考试类型查询成绩（不分页）
+    @Query("""
+    SELECT s FROM Score s
+    WHERE (:personId = 0 OR s.student.personId = :personId)
+      AND (:courseId = 0 OR s.course.courseId = :courseId)
+      AND (:examType IS NULL OR s.examType = :examType)
+""")
+    List<Score> findByStudentCourseAndExamType(@Param("personId") Integer personId,
+                                               @Param("courseId") Integer courseId,
+                                               @Param("examType") String examType);
+
+    // 分页查询成绩（关键：加 countQuery）
+    @Query(
+            value = """
+    SELECT s FROM Score s
+    WHERE (:personId = 0 OR s.student.personId = :personId)
+      AND (:courseId = 0 OR s.course.courseId = :courseId)
+      AND (:examType IS NULL OR s.examType = :examType)
+  """,
+            countQuery = """
+    SELECT COUNT(s) FROM Score s
+    WHERE (:personId = 0 OR s.student.personId = :personId)
+      AND (:courseId = 0 OR s.course.courseId = :courseId)
+      AND (:examType IS NULL OR s.examType = :examType)
+  """
+    )
+    Page<Score> findByStudentCourseAndExamType(@Param("personId") Integer personId,
+                                               @Param("courseId") Integer courseId,
+                                               @Param("examType") String examType,
                                                Pageable pageable);
 
     // 新增：按课程和考试类型获取成绩，用于排名计算（按分数降序）
@@ -70,7 +102,14 @@ public interface ScoreRepository extends JpaRepository<Score,Integer> {
                                                                 @Param("examType") String examType);
 
     // 新增：按学生获取所有成绩，用于学生个人成绩单PDF生成
-    @Query("FROM Score WHERE student.person.personId = :personId ORDER BY examType ASC, course.name ASC")
+    /*@Query("FROM Score WHERE student.person.personId = :personId ORDER BY examType ASC, course.name ASC")
     List<Score> findByStudentPersonPersonIdOrderByExamTypeAscCourseNameAsc(@Param("personId") Integer personId);
+    */
+    @Query("""
+    SELECT s FROM Score s
+    WHERE s.student.personId = :personId
+    ORDER BY s.examType ASC, s.course.name ASC
+""")
+    List<Score> findByStudentPersonIdOrderByExamTypeAscCourseNameAsc(@Param("personId") Integer personId);
 
 }
