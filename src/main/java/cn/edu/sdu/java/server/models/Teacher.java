@@ -17,6 +17,7 @@ public class Teacher {
     private Integer personId;
 
     @OneToOne
+    @MapsId
     @JoinColumn(name="personId")
     private Person person;
 

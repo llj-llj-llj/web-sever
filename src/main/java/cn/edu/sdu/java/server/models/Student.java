@@ -27,8 +27,8 @@ public class Student {
     private Integer personId;
 
     @OneToOne
+    @MapsId
     @JoinColumn(name="personId")
-    @JsonIgnore
     private Person person;
 
     @Size(max = 20)

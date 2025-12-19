@@ -73,6 +73,6 @@ public class Person {
 
     @Lob
     @Basic(fetch = FetchType.LAZY)
-    @Column(name=" photo", columnDefinition="longblob", nullable=true)
+    @Column(name="photo", columnDefinition="longblob", nullable=true)
     private byte[] photo;
 }
