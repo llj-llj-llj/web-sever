@@ -27,7 +27,9 @@ public class StudentLeave {
     private Teacher teacher;
 
     @Size(max=50)
-    private String leaveDate;
+    private String leaveStartDate;
+    @Size(max=50)
+    private String leaveEndDate;
     @Size(max=100)
     private String reason;
     private Integer state;
@@ -38,4 +40,6 @@ public class StudentLeave {
     @Size(max=100)
     private String adminComment;
     private Date adminTime;
+    @Size(max=200)
+    private String attachment;
 }

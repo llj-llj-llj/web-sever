@@ -27,4 +27,5 @@ public class Teacher {
     @Size(max = 10)
     private String degree;
 
+
 }
