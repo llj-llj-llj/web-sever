@@ -36,5 +36,18 @@ public class StudentLeaveController {
     public DataResponse studentLeaveCheck(@Valid @RequestBody DataRequest dataRequest) {
         return studentLeaveService.studentLeaveCheck(dataRequest);
     }
+    @PostMapping(path = "/uploadAttachment")
+    @PreAuthorize("hasRole('STUDENT')")
+    public DataResponse uploadAttachment(@RequestBody byte[] barr,
+                                       @RequestParam(name = "uploader") String uploader,
+                                       @RequestParam(name = "fileName") String fileName) {
+        return studentLeaveService.uploadAttachment(barr, uploader, fileName);
+    }
+
+    @PostMapping("/export")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN') or hasRole('TEACHER')")
+    public void exportStudentLeaveList(@Valid @RequestBody DataRequest dataRequest, jakarta.servlet.http.HttpServletResponse response) throws Exception {
+        studentLeaveService.exportStudentLeaveList(dataRequest, response);
+    }
 
 }
