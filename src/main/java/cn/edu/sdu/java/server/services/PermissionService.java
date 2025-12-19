@@ -104,8 +104,15 @@ public class PermissionService {
                 return false;
             }
             
+            // 记录用户类型信息
+            String userTypeName = user.getUserType() != null ? user.getUserType().getName() : "NULL";
+            log.info("检查用户 {} 的导入成绩权限，用户类型: {}", userId, userTypeName);
+            
             // 只有管理员和教师可以导入成绩
-            return isAdmin(user) || isTeacher(user);
+            boolean hasPermission = isAdmin(user) || isTeacher(user);
+            log.info("用户 {} 导入成绩权限检查结果: {}", userId, hasPermission);
+            
+            return hasPermission;
         } catch (Exception e) {
             log.error("权限检查失败", e);
             return false;
@@ -141,8 +148,10 @@ public class PermissionService {
         if (user.getUserType() == null) {
             return false;
         }
-        return "ADMIN".equals(user.getUserType().getName()) || 
-               "管理员".equals(user.getUserType().getName());
+        String typeName = user.getUserType().getName();
+        return "ROLE_ADMIN".equals(typeName) || 
+               "ADMIN".equals(typeName) ||
+               "管理员".equals(typeName);
     }
     
     /**
@@ -152,8 +161,10 @@ public class PermissionService {
         if (user.getUserType() == null) {
             return false;
         }
-        return "TEACHER".equals(user.getUserType().getName()) || 
-               "教师".equals(user.getUserType().getName());
+        String typeName = user.getUserType().getName();
+        return "ROLE_TEACHER".equals(typeName) || 
+               "TEACHER".equals(typeName) ||
+               "教师".equals(typeName);
     }
     
     /**
@@ -163,8 +174,10 @@ public class PermissionService {
         if (user.getUserType() == null) {
             return false;
         }
-        return "STUDENT".equals(user.getUserType().getName()) || 
-               "学生".equals(user.getUserType().getName());
+        String typeName = user.getUserType().getName();
+        return "ROLE_STUDENT".equals(typeName) || 
+               "STUDENT".equals(typeName) ||
+               "学生".equals(typeName);
     }
     
     /**
