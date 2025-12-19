@@ -39,7 +39,7 @@ public class StudentLeaveService {
         List<Teacher> sList = teacherRepository.findAll();  //数据库查询操作
         List<OptionItem> itemList = new ArrayList<>();
         for (Teacher t : sList) {
-            itemList.add(new OptionItem(t.getPersonId(), t.getPersonId() + "", t.getPerson().getNum() + "-" + t.getPerson().getNum()));
+            itemList.add(new OptionItem(t.getPersonId(), t.getPersonId() + "", t.getPerson().getNum() + "-" + t.getPerson().getName()));
         }
         return new OptionItemList(0, itemList);
     }
