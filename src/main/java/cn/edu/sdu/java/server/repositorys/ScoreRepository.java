@@ -142,4 +142,44 @@ public interface ScoreRepository extends JpaRepository<Score,Integer> {
     
     // 新增：按课程ID查询成绩
     List<Score> findByCourseCourseId(Integer courseId);
+    @Query(
+            value = """
+    SELECT s FROM Score s
+    WHERE (:teacherId = 0 OR s.course.personId = :teacherId)
+      AND (:personId = 0 OR s.student.personId = :personId)
+      AND (:courseId = 0 OR s.course.courseId = :courseId)
+      AND (:examType IS NULL OR s.examType = :examType)
+  """,
+            countQuery = """
+    SELECT COUNT(s) FROM Score s
+    WHERE (:teacherId = 0 OR s.course.personId = :teacherId)
+      AND (:personId = 0 OR s.student.personId = :personId)
+      AND (:courseId = 0 OR s.course.courseId = :courseId)
+      AND (:examType IS NULL OR s.examType = :examType)
+  """
+    )
+    Page<Score> findByTeacherStudentCourseAndExamType(
+            @Param("teacherId") Integer teacherId,
+            @Param("personId") Integer personId,
+            @Param("courseId") Integer courseId,
+            @Param("examType") String examType,
+            Pageable pageable
+    );
+    @Query("""
+SELECT s FROM Score s
+WHERE (:teacherId = 0 OR s.course.personId = :teacherId)
+  AND (:personId = 0 OR s.student.personId = :personId)
+  AND (:courseId = 0 OR s.course.courseId = :courseId)
+  AND (:examType IS NULL OR :examType = '' OR s.examType = :examType)
+""")
+    List<Score> findByTeacherStudentCourseAndExamType(
+            @Param("teacherId") Long teacherId,
+            @Param("personId") Integer personId,
+            @Param("courseId") Integer courseId,
+            @Param("examType") String examType
+    );
+
+
+
+
 }

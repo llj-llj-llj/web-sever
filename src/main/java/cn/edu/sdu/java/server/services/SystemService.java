@@ -68,23 +68,33 @@ public class SystemService {
     }
     public void modifyLog(Object o, boolean isCreate) {
         String info = CommonMethod.ObjectToJSon(o);
-        if(info == null)
+        if (info == null)
             return;
+
+        // ✅ 关键修复：防止 info 超过 2000
+        if (info.length() > 2000) {
+            info = info.substring(0, 2000);
+        }
+
         String tableName = o.getClass().getName();
         int index = tableName.lastIndexOf('.');
-        if(index > 0) {
-            tableName = tableName.substring(index+1);
+        if (index > 0) {
+            tableName = tableName.substring(index + 1);
         }
+
         ModifyLog l = new ModifyLog();
         l.setTableName(tableName);
-        if(isCreate)
+        if (isCreate)
             l.setType("0");
         else
             l.setType("1");
+
         l.setInfo(info);
         l.setOperateTime(DateTimeTool.parseDateTime(new Date()));
         l.setOperatorId(CommonMethod.getPersonId());
+
         modifyLogRepository.save(l);
     }
+
 }
 
