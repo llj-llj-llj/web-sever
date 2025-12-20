@@ -34,5 +34,8 @@ public class Score {
     private Integer mark;
     private Integer ranking;
     private String examType; // 考试类型：期中考试、期末考试、平时成绩、模拟考试
+    
+    @Column(name = "final_score")
+    private Double finalScore; // 课程最终成绩（加权平均分）
 
 }
