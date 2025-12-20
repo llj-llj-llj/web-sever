@@ -1,12 +1,15 @@
 package cn.edu.sdu.java.server.repositorys;
 
 import cn.edu.sdu.java.server.models.Score;
+import cn.edu.sdu.java.server.models.Student;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 /*
@@ -80,7 +83,7 @@ public interface ScoreRepository extends JpaRepository<Score,Integer> {
 
     // 新增：按课程和考试类型获取成绩，用于排名计算（按分数降序）
     @Query("FROM Score WHERE course.courseId = :courseId AND examType = :examType ORDER BY mark DESC")
-    List<Score> findByCourseIdAndExamTypeOrderByMarkDesc(@Param("courseId") Integer courseId, 
+    List<Score> findByCourseCourseIdAndExamTypeOrderByMarkDesc(@Param("courseId") Integer courseId, 
                                                          @Param("examType") String examType);
 
     // 新增：统计查询 - 用于分页信息
@@ -96,10 +99,7 @@ public interface ScoreRepository extends JpaRepository<Score,Integer> {
     @Query("SELECT DISTINCT s.course.courseId, s.examType FROM Score s WHERE s.examType IS NOT NULL")
     List<Object[]> findAllCourseExamTypeCombinations();
 
-    // 新增：按课程和考试类型获取成绩，用于PDF生成（按分数降序）
-    @Query("FROM Score WHERE course.courseId = :courseId AND examType = :examType ORDER BY mark DESC")
-    List<Score> findByCourseCourseIdAndExamTypeOrderByMarkDesc(@Param("courseId") Integer courseId, 
-                                                                @Param("examType") String examType);
+
 
     // 新增：按学生获取所有成绩，用于学生个人成绩单PDF生成
     /*@Query("FROM Score WHERE student.person.personId = :personId ORDER BY examType ASC, course.name ASC")
@@ -112,4 +112,34 @@ public interface ScoreRepository extends JpaRepository<Score,Integer> {
 """)
     List<Score> findByStudentPersonIdOrderByExamTypeAscCourseNameAsc(@Param("personId") Integer personId);
 
+
+
+    //新增删除操作
+    @Modifying
+    @Transactional
+    void deleteByStudentPersonId(Integer personId);
+    
+    // 新增：按学生ID和课程ID查询成绩
+    List<Score> findByStudentPersonIdAndCourseCourseId(Integer personId, Integer courseId);
+    
+    // 新增：更新课程最终成绩
+    @Modifying
+    @Transactional
+    @Query("UPDATE Score s SET s.finalScore = :finalScore WHERE s.student.personId = :personId AND s.course.courseId = :courseId")
+    int updateFinalScoreByStudentAndCourse(@Param("personId") Integer personId, 
+                                          @Param("courseId") Integer courseId, 
+                                          @Param("finalScore") Double finalScore);
+    
+    // 新增：更新学生总最终成绩
+    @Modifying
+    @Transactional
+    @Query("UPDATE Student st SET st.finalScore = :finalScore WHERE st.personId = :personId")
+    int updateStudentFinalScore(@Param("personId") Integer personId, @Param("finalScore") Double finalScore);
+    
+    // 新增：按班级查询学生ID
+    @Query("SELECT DISTINCT s.student.personId FROM Score s WHERE s.student.className = :className")
+    List<Integer> findStudentIdsByClassName(@Param("className") String className);
+    
+    // 新增：按课程ID查询成绩
+    List<Score> findByCourseCourseId(Integer courseId);
 }
