@@ -18,7 +18,7 @@ public class Teacher {
 
     @OneToOne
     @MapsId
-    @JoinColumn(name="personId")
+    @JoinColumn(name="person_id")
     private Person person;
 
     @Size(max = 20)

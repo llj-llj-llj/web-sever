@@ -19,11 +19,11 @@ public class StudentLeave {
     private Integer studentLeaveId;
 
     @ManyToOne
-    @JoinColumn(name="studentId")
+    @JoinColumn(name="student_id")
     private Student student;
 
     @ManyToOne
-    @JoinColumn(name="teacherId")
+    @JoinColumn(name="teacher_id")
     private Teacher teacher;
 
     @Size(max=50)

@@ -8,6 +8,8 @@ server:
 spring:
   application:
     name: java-server
+  main:
+    allow-bean-definition-overriding: true
   datasource:
     url: jdbc:mysql://202.194.14.120:3306/web_db?allowPublicKeyRetrieval=true&useSSL=false
     username: java_server
