@@ -54,14 +54,23 @@ public class ScoreService {
 
     public DataResponse getScoreList(DataRequest dataRequest) {
         Integer personId = dataRequest.getInteger("personId");
-        if(personId == null)
-            personId = 0;
+        if(personId == null) personId = 0;
+
         Integer courseId = dataRequest.getInteger("courseId");
-        if(courseId == null)
-            courseId = 0;
+        if(courseId == null) courseId = 0;
+
         String examType = dataRequest.getString("examType");
-        
-        List<Score> sList = scoreRepository.findByStudentCourseAndExamType(personId, courseId, examType);  //数据库查询操作
+
+        Long teacherId = 0L;
+        if ("ROLE_TEACHER".equals(CommonMethod.getRoleName())) {
+            teacherId = Long.valueOf(CommonMethod.getPersonId()); // 你这里已对上
+        }
+
+        List<Score> sList = scoreRepository.findByTeacherStudentCourseAndExamType(
+                teacherId, personId, courseId, examType
+        );
+
+
         List<Map<String,Object>> dataList = new ArrayList<>();
         Map<String,Object> m;
         for (Score s : sList) {
@@ -650,5 +659,6 @@ public class ScoreService {
             return 0;
         }
     }
+
 
 }
