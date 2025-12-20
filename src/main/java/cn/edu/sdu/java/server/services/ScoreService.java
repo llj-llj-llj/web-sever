@@ -31,6 +31,7 @@ public class ScoreService {
     private final StudentRepository studentRepository;
     private final ScoreValidationService validationService;
     private final RankingCalculationService rankingService;
+    private final ExamWeightService examWeightService;
     public OptionItemList getStudentItemOptionList( DataRequest dataRequest) {
         List<Student> sList = studentRepository.findStudentListByNumName("");  //数据库查询操作
         List<OptionItem> itemList = new ArrayList<>();
@@ -63,18 +64,18 @@ public class ScoreService {
         Map<String,Object> m;
         for (Score s : sList) {
             m = new HashMap<>();
-            m.put("scoreId", s.getScoreId()+"");
-            m.put("personId",s.getStudent().getPersonId()+"");
-            m.put("courseId",s.getCourse().getCourseId()+"");
+            m.put("scoreId", s.getScoreId());
+            m.put("personId", s.getStudent().getPersonId());
+            m.put("courseId", s.getCourse().getCourseId());
             m.put("studentNum",s.getStudent().getPerson().getNum());
             m.put("studentName",s.getStudent().getPerson().getName());
             m.put("className",s.getStudent().getClassName());
             m.put("courseNum",s.getCourse().getNum());
             m.put("courseName",s.getCourse().getName());
-            m.put("credit",""+s.getCourse().getCredit());
-            m.put("mark",""+s.getMark());
+            m.put("credit", s.getCourse().getCredit());
+            m.put("mark", s.getMark());
             m.put("examType", s.getExamType() != null ? s.getExamType() : "");
-            m.put("ranking", s.getRanking() != null ? s.getRanking().toString() : "");
+            m.put("ranking", s.getRanking() != null ? s.getRanking() : 0);
             dataList.add(m);
         }
         return CommonMethod.getReturnData(dataList);
@@ -143,6 +144,12 @@ public class ScoreService {
             result.put("number", scorePage.getNumber());
             result.put("first", scorePage.isFirst());
             result.put("last", scorePage.isLast());
+            
+            // 计算加权平均分
+            if (courseId > 0) {
+                Double weightedAverage = examWeightService.calculateWeightedAverage(dataList, courseId);
+                result.put("weightedAverage", weightedAverage);
+            }
             
             log.info("分页查询成绩成功 - 页码: {}, 大小: {}, 总数: {}", 
                     page, size, scorePage.getTotalElements());
