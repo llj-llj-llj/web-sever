@@ -17,7 +17,7 @@ public class StudentLeaveController {
         this.studentLeaveService = studentLeaveService;
     }
     @PostMapping("/getTeacherItemOptionList")
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('TEACHER') or hasRole('ADMIN')")
     public OptionItemList getTeacherItemOptionList(@Valid @RequestBody DataRequest dataRequest) {
         return studentLeaveService.getTeacherItemOptionList(dataRequest);
     }

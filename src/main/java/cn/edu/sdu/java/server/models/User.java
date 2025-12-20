@@ -33,11 +33,11 @@ public class User {
     // ⭐ 关键：主键共享
     @OneToOne
     @MapsId
-    @JoinColumn(name = "personId")
+    @JoinColumn(name = "person_id")
     private Person person;
 
     @ManyToOne
-    @JoinColumn(name = "userTypeId")
+    @JoinColumn(name = "user_type_id")
     private UserType userType;
 
     @NotBlank

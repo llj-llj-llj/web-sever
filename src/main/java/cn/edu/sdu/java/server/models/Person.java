@@ -75,13 +75,4 @@ public class Person {
     @Basic(fetch = FetchType.LAZY)
     @Column(name="photo", columnDefinition="longblob", nullable=true)
     private byte[] photo;
-
-
-    public String getNum() {
-        return num;
-    }
-
-    public String getName() {
-        return name;
-    }
 }
