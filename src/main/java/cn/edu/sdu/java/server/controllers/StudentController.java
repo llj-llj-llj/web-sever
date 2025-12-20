@@ -54,6 +54,7 @@ public class StudentController {
      */
 
     @PostMapping("/studentDelete")
+    @PreAuthorize("hasRole('ADMIN')") // 明确指定只有管理员可以删除
     public DataResponse studentDelete(@Valid @RequestBody DataRequest dataRequest) {
         return studentService.studentDelete(dataRequest);
     }

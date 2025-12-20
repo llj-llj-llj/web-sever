@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -102,24 +103,42 @@ public class StudentService {
     }
 
 
-
+    @Transactional // 必须添加事务，确保删除过程要么全部成功，要么全部回滚
     public DataResponse studentDelete(DataRequest dataRequest) {
-        Integer personId = dataRequest.getInteger("personId");  //获取student_id值
-        Student s = null;
-        Optional<Student> op;
-        if (personId != null && personId > 0) {
-            op = studentRepository.findById(personId);   //查询获得实体对象
-            if(op.isPresent()) {
-                s = op.get();
-                Optional<User> uOp = userRepository.findById(personId); //查询对应该学生的账户
-                //删除对应该学生的账户
-                uOp.ifPresent(userRepository::delete);
-                Person p = s.getPerson();
-                studentRepository.delete(s);    //首先数据库永久删除学生信息
-                personRepository.delete(p);   // 然后数据库永久删除学生信息
-            }
+        Integer personId = dataRequest.getInteger("personId"); // 获取要删除的学生主键
+        if (personId == null || personId <= 0) {
+            return CommonMethod.getReturnMessageError("无效的ID");
         }
-        return CommonMethod.getReturnMessageOK();  //通知前端操作正常
+
+        Optional<Student> op = studentRepository.findById(personId); // 查询获得学生实体对象
+        if (op.isPresent()) {
+            Student s = op.get();
+
+            // 删除关联的子表数据，防止违反外键约束导致删除失败
+            // 删除成绩信息
+            scoreRepository.deleteByStudentPersonId(personId);
+            // 删除家庭成员信息
+            familyMemberRepository.deleteByStudentPersonId(personId);
+            // 如果有消费记录(Fee)，也建议在此处删除
+            // feeRepository.deleteByStudentPersonId(personId);
+
+            // 删除对应的登录账户 (User表)
+            Optional<User> uOp = userRepository.findById(personId);
+            uOp.ifPresent(userRepository::delete);
+
+            //  删除学生信息 (Student表)
+            studentRepository.delete(s);
+
+            // 删除基础人员信息 (Person表)
+            Person p = s.getPerson();
+            if (p != null) {
+                personRepository.delete(p);
+            }
+
+            return CommonMethod.getReturnMessageOK(); // 返回操作成功
+        } else {
+            return CommonMethod.getReturnMessageError("未找到该学生记录");
+        }
     }
 
 
