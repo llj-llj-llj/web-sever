@@ -19,6 +19,7 @@ public class StudentLeaveController {
     @PostMapping("/getTeacherItemOptionList")
     @PreAuthorize("hasRole('STUDENT') or hasRole('TEACHER') or hasRole('ADMIN')")
     public OptionItemList getTeacherItemOptionList(@Valid @RequestBody DataRequest dataRequest) {
+        System.out.println(">>> [Controller] getTeacherItemOptionList hit");
         return studentLeaveService.getTeacherItemOptionList(dataRequest);
     }
     @PostMapping("/getStudentLeaveList")

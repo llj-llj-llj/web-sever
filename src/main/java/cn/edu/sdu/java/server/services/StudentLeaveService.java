@@ -36,10 +36,20 @@ public class StudentLeaveService {
     }
 
     public OptionItemList getTeacherItemOptionList(DataRequest dataRequest) {
+        System.out.println(">>> [Service] start getTeacherItemOptionList");
         List<Teacher> sList = teacherRepository.findAll();  //数据库查询操作
+        System.out.println(">>> [Service] teacher count = " + sList.size());
+
         List<OptionItem> itemList = new ArrayList<>();
         for (Teacher t : sList) {
-            itemList.add(new OptionItem(t.getPersonId(), t.getPersonId() + "", t.getPerson().getNum() + "-" + t.getPerson().getNum()));
+            System.out.println(">>> [Service] teacher personId=" + t.getPersonId()
+                    + ", person=" + (t.getPerson() == null ? "null" : t.getPerson().getPersonId())
+            );
+            itemList.add(new OptionItem(t.getPersonId(), t.getPersonId() + "", t.getPerson().getNum() + "-" + t.getPerson().getName()));
+        }
+        System.out.println(">>> [Service] itemList size = " + itemList.size());
+        if (!itemList.isEmpty()) {
+            System.out.println(">>> [Service] first item title = " + itemList.get(0).getTitle());
         }
         return new OptionItemList(0, itemList);
     }
