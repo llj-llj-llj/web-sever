@@ -54,22 +54,23 @@ public class CourseService {
         String classTime = dataRequest.getString("classTime");
         String location = dataRequest.getString("location");
         Integer personId = dataRequest.getInteger("personId");
-        Optional<Course> op;
-        Course c= null;
 
-        if(courseId != null) {
-            op = courseRepository.findById(courseId);
-            if(op.isPresent())
-                c= op.get();
-        }
-        if(c== null)
+        Course c;
+
+        // 1️⃣ 先保证 c 一定不为 null
+        if (courseId != null) {
+            c = courseRepository.findById(courseId).orElse(new Course());
+        } else {
             c = new Course();
-        Course pc =null;
-        if(preCourseId != null) {
-            op = courseRepository.findById(preCourseId);
-            if(op.isPresent())
-                pc = op.get();
         }
+
+        // 2️⃣ 前序课
+        Course pc = null;
+        if (preCourseId != null) {
+            pc = courseRepository.findById(preCourseId).orElse(null);
+        }
+
+        // 3️⃣ 赋值
         c.setNum(num);
         c.setName(name);
         c.setCredit(credit);
@@ -77,10 +78,20 @@ public class CourseService {
         c.setPreCourse(pc);
         c.setClassTime(classTime);
         c.setLocation(location);
-        c.setPersonId(Long.valueOf(personId));
+
+        // 4️⃣ personId 可为 null（重点）
+        if (personId != null) {
+            c.setPersonId(Long.valueOf(personId));
+        } else {
+            c.setPersonId(null);
+        }
+
+        // 5️⃣ 保存
         courseRepository.save(c);
+
         return CommonMethod.getReturnMessageOK();
     }
+
     public DataResponse courseDelete(DataRequest dataRequest) {
         Integer courseId = dataRequest.getInteger("courseId");
         Optional<Course> op;

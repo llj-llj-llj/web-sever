@@ -89,8 +89,10 @@ public class StudentLeaveService {
 
                 dataList.add(map);
             }
+
         }
         return CommonMethod.getReturnData(dataList);
+
     }
 
     public DataResponse studentLeaveSave(DataRequest dataRequest) {
