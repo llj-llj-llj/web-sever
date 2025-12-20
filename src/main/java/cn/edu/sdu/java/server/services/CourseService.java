@@ -25,11 +25,15 @@ public class CourseService {
         Course pc;
         for (Course c : cList) {
             m = new HashMap<>();
-            m.put("courseId", c.getCourseId()+"");
+            m.put("courseId", c.getCourseId());
             m.put("num",c.getNum());
             m.put("name",c.getName());
-            m.put("credit",c.getCredit()+"");
+            m.put("credit",c.getCredit());
             m.put("coursePath",c.getCoursePath());
+
+            m.put("classTime", c.getClassTime());
+            m.put("location", c.getLocation());
+
             pc =c.getPreCourse();
             if(pc != null) {
                 m.put("preCourse",pc.getName());
@@ -47,6 +51,9 @@ public class CourseService {
         String coursePath = dataRequest.getString("coursePath");
         Integer credit = dataRequest.getInteger("credit");
         Integer preCourseId = dataRequest.getInteger("preCourseId");
+        String classTime = dataRequest.getString("classTime");
+        String location = dataRequest.getString("location");
+        Integer personId = dataRequest.getInteger("personId");
         Optional<Course> op;
         Course c= null;
 
@@ -68,6 +75,9 @@ public class CourseService {
         c.setCredit(credit);
         c.setCoursePath(coursePath);
         c.setPreCourse(pc);
+        c.setClassTime(classTime);
+        c.setLocation(location);
+        c.setPersonId(Long.valueOf(personId));
         courseRepository.save(c);
         return CommonMethod.getReturnMessageOK();
     }
@@ -84,5 +94,30 @@ public class CourseService {
         }
         return CommonMethod.getReturnMessageOK();
     }
+    public DataResponse getTeacherCourseList(DataRequest dataRequest) {
+        Integer personId = dataRequest.getInteger("personId");
+        if (personId == null) {
+            return CommonMethod.getReturnMessageError("教师ID不能为空");
+        }
+
+        List<Course> list =
+                courseRepository.findByPersonId(Long.valueOf(personId));
+
+        List<Map<String, Object>> dataList = new ArrayList<>();
+
+        for (Course c : list) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("courseId", c.getCourseId());
+            m.put("num", c.getNum());
+            m.put("name", c.getName());
+            m.put("credit", c.getCredit());
+            m.put("classTime", c.getClassTime());
+            m.put("location", c.getLocation());
+            dataList.add(m);
+        }
+
+        return CommonMethod.getReturnData(dataList);
+    }
+
 
 }

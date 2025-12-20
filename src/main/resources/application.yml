@@ -36,7 +36,10 @@ spring:
       charset: UTF-8
       enabled: true
       force: true
+# ...中间很多配置...
+
 attach:
-  folder: /teach-2025/
+  folder: D:/teach-2025/
+
 logging:
   config: classpath:loggback.xml

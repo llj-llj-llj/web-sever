@@ -124,4 +124,26 @@ public class ScoreController {
         return cn.edu.sdu.java.server.util.CommonMethod.getReturnMessageError("请提供学生ID或课程ID和考试类型");
     }
 
+    @PostMapping("/getStudentFinalScoreAnalysis")
+    public DataResponse getStudentFinalScoreAnalysis(@Valid @RequestBody DataRequest dataRequest) {
+        Integer personId = dataRequest.getInteger("personId");
+        
+        // 如果没有提供学生ID，使用当前登录用户ID
+        if (personId == null || personId == 0) {
+            personId = SecurityUtil.getCurrentUserId();
+            if (personId == null) {
+                return cn.edu.sdu.java.server.util.CommonMethod.getReturnMessageError("用户未登录");
+            }
+        }
+        
+        return scoreService.getStudentFinalScoreAnalysis(personId);
+    }
+
+    @PostMapping("/getClassFinalScoreAnalysis")
+    public DataResponse getClassFinalScoreAnalysis(@Valid @RequestBody DataRequest dataRequest) {
+        Integer courseId = dataRequest.getInteger("courseId");
+        String examType = dataRequest.getString("examType");
+        
+        return scoreService.getClassFinalScoreAnalysis(courseId, examType);
+    }
 }

@@ -37,5 +37,15 @@ public class Course  {
     private Course preCourse;
     @Size(max = 12)
     private String coursePath;
+    @Size(max = 50)
+    private  String classTime;
+    @Size(max = 50)
+    private  String location;
+
+    @Column(name = "person_id")
+    private Long personId;
+
+
+
 
 }

@@ -34,6 +34,9 @@ public class Student {
 
     @Size(max = 50)
     private String className;
+    
+    @Column(name = "final_score")
+    private Double finalScore; // 学生总最终成绩（按学分加权）
 
     public Integer getPersonId() {
         return personId;

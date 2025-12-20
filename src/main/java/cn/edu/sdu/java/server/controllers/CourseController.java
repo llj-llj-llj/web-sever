@@ -29,4 +29,10 @@ public class CourseController {
     public DataResponse courseDelete(@Valid @RequestBody DataRequest dataRequest) {
         return courseService.courseDelete(dataRequest);
     }
+    @PostMapping("/getTeacherCourse")
+    public DataResponse getTeacherCourse(@Valid @RequestBody DataRequest dataRequest) {
+        return courseService.getTeacherCourseList(dataRequest);
+    }
+
+
 }

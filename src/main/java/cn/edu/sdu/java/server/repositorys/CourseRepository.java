@@ -19,4 +19,7 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
 
     Optional<Course> findByNum(String num);
     List<Course> findByName(String name);
+
+    List<Course> findByPersonId(Long personId);
+
 }
