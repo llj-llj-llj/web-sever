@@ -19,7 +19,7 @@ public class CourseChooseController {
     /** 学生已选课程 ID */
     @PostMapping("/list")
     public DataResponse list(@RequestBody DataRequest request) {
-        return service.getSelectedCourseList(request);
+        return service.getMyCourseList(request);
     }
 
     /** 学生选课 */

@@ -42,6 +42,10 @@ public class Course  {
     @Size(max = 50)
     private  String location;
 
+    @Column(name = "person_id")
+    private Long personId;
+
+
 
 
 }

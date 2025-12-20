@@ -1,5 +1,6 @@
 package cn.edu.sdu.java.server.services;
 
+import cn.edu.sdu.java.server.models.Course;
 import cn.edu.sdu.java.server.models.CourseChoose;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
@@ -8,7 +9,9 @@ import cn.edu.sdu.java.server.util.CommonMethod;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CourseChooseService {
@@ -20,18 +23,24 @@ public class CourseChooseService {
     }
 
     /** 学生已选课程 ID 列表 */
-    public DataResponse getSelectedCourseList(DataRequest request) {
+    public DataResponse getMyCourseList(DataRequest request) {
         Integer studentId = request.getInteger("studentId");
 
-        List<CourseChoose> list =
-                courseChooseRepository.findByStudentId(studentId);
+        List<Course> courses = courseChooseRepository.findCoursesByStudentId(studentId);
+        List<Map<String, Object>> dataList = new ArrayList<>();
 
-        List<Integer> courseIds = new ArrayList<>();
-        for (CourseChoose cc : list) {
-            courseIds.add(cc.getCourseId());
+        for (Course c : courses) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("courseId", c.getCourseId());
+            m.put("num", c.getNum());
+            m.put("name", c.getName());
+            m.put("credit", c.getCredit());
+            m.put("classTime", c.getClassTime());
+            m.put("location", c.getLocation());
+            dataList.add(m);
         }
 
-        return CommonMethod.getReturnData(courseIds);
+        return CommonMethod.getReturnData(dataList);
     }
 
     /** 选课 */
