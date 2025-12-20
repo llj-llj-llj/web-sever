@@ -1,5 +1,6 @@
 package cn.edu.sdu.java.server.services;
 
+import cn.edu.sdu.java.server.models.Person;
 import cn.edu.sdu.java.server.models.Student;
 import cn.edu.sdu.java.server.models.StudentLeave;
 import cn.edu.sdu.java.server.models.Teacher;
@@ -7,6 +8,7 @@ import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.payload.response.OptionItem;
 import cn.edu.sdu.java.server.payload.response.OptionItemList;
+import cn.edu.sdu.java.server.repositorys.PersonRepository;
 import cn.edu.sdu.java.server.repositorys.StudentLeaveRepository;
 import cn.edu.sdu.java.server.repositorys.StudentRepository;
 import cn.edu.sdu.java.server.repositorys.TeacherRepository;
@@ -28,18 +30,20 @@ public class StudentLeaveService {
     private final StudentRepository studentRepository;
     private final TeacherRepository teacherRepository;
     private final StudentLeaveRepository studentLeaveRepository;
+    private final PersonRepository personRepository;
 
-    public StudentLeaveService(StudentRepository studentRepository, TeacherRepository teacherRepository, StudentLeaveRepository studentLeaveRepository) {
+    public StudentLeaveService(StudentRepository studentRepository, TeacherRepository teacherRepository, StudentLeaveRepository studentLeaveRepository, PersonRepository personRepository) {
         this.studentRepository = studentRepository;
         this.teacherRepository = teacherRepository;
         this.studentLeaveRepository = studentLeaveRepository;
+        this.personRepository = personRepository;
     }
 
     public OptionItemList getTeacherItemOptionList(DataRequest dataRequest) {
-        List<Teacher> sList = teacherRepository.findAll();  //数据库查询操作
+        List<Person> personList = personRepository.findByType("2");  //获取所有类型为2(教师)的人员
         List<OptionItem> itemList = new ArrayList<>();
-        for (Teacher t : sList) {
-            itemList.add(new OptionItem(t.getPersonId(), t.getPersonId() + "", t.getPerson().getNum() + "-" + t.getPerson().getNum()));
+        for (Person p : personList) {
+            itemList.add(new OptionItem(p.getPersonId(), p.getPersonId() + "", p.getNum() + "-" + p.getName()));
         }
         return new OptionItemList(0, itemList);
     }
@@ -47,16 +51,36 @@ public class StudentLeaveService {
     public DataResponse getStudentLeaveList(DataRequest dataRequest) {
         String roleName = CommonMethod.getRoleName();
         String userName = CommonMethod.getUsername();
+        Integer personId = CommonMethod.getPersonId();
         Integer state = dataRequest.getInteger("state");
         if(state == null)
             state = -1;
         String search = dataRequest.getString("search");
         assert roleName != null;
-        List<StudentLeave> slList = switch (roleName) {
-            case "ROLE_STUDENT" -> studentLeaveRepository.getStudentLeaveList(-1, search, userName, "");
-            case "ROLE_TEACHER" -> studentLeaveRepository.getStudentLeaveList(-1, search, "", userName);
-            case "ROLE_ADMIN" -> studentLeaveRepository.getStudentLeaveList(state, search, "", "");
-            default -> null;
+        // 添加调试信息
+        System.out.println("[DEBUG] getStudentLeaveList - roleName: " + roleName + ", userName: " + userName + ", personId: " + personId + ", state: " + state + ", search: " + search);
+        List<StudentLeave> slList;
+        switch (roleName) {
+            case "ROLE_STUDENT":
+                System.out.println("[DEBUG] 学生角色，使用studentId: " + personId + "查询");
+                slList = studentLeaveRepository.getStudentLeaveList(-1, search, "", "", personId);
+                System.out.println("[DEBUG] 学生角色查询结果数量: " + (slList != null ? slList.size() : 0));
+                break;
+            case "ROLE_TEACHER":
+                System.out.println("[DEBUG] 教师角色，使用teacherNum: " + userName + "查询");
+                slList = studentLeaveRepository.getStudentLeaveList(-1, search, "", userName, null);
+                System.out.println("[DEBUG] 教师角色查询结果数量: " + (slList != null ? slList.size() : 0));
+                break;
+            case "ROLE_ADMIN":
+                System.out.println("[DEBUG] 管理员角色，查询所有记录");
+                slList = studentLeaveRepository.getStudentLeaveList(state, search, "", "", null);
+                System.out.println("[DEBUG] 管理员角色查询结果数量: " + (slList != null ? slList.size() : 0));
+                break;
+            default:
+                System.out.println("[DEBUG] 默认角色，查询所有记录");
+                slList = studentLeaveRepository.getStudentLeaveList(state, search, "", "", null);
+                System.out.println("[DEBUG] 默认角色查询结果数量: " + (slList != null ? slList.size() : 0));
+                break;
         };
         List<Map<String, Object>> dataList = new ArrayList<>();
         Map<String, Object> map;
@@ -118,7 +142,8 @@ public class StudentLeaveService {
         sl.setLeaveStartDate(leaveStartDate);
         sl.setLeaveEndDate(leaveEndDate);
         sl.setReason(reason);
-        sl.setState(state);
+        // 确保state不为null，使用默认值0
+        sl.setState(state != null ? state : 0);
         sl.setAttachment(attachment);
         studentLeaveRepository.save(sl);
         return CommonMethod.getReturnMessageOK();
@@ -182,15 +207,16 @@ public class StudentLeaveService {
         // 获取请假列表数据
         String roleName = CommonMethod.getRoleName();
         String userName = CommonMethod.getUsername();
+        Integer personId = CommonMethod.getPersonId();
         Integer state = dataRequest.getInteger("state");
         if(state == null)
             state = -1;
         String search = dataRequest.getString("search");
         assert roleName != null;
         List<StudentLeave> slList = switch (roleName) {
-            case "ROLE_STUDENT" -> studentLeaveRepository.getStudentLeaveList(-1, search, userName, "");
-            case "ROLE_TEACHER" -> studentLeaveRepository.getStudentLeaveList(-1, search, "", userName);
-            case "ROLE_ADMIN" -> studentLeaveRepository.getStudentLeaveList(state, search, "", "");
+            case "ROLE_STUDENT" -> studentLeaveRepository.getStudentLeaveList(-1, search, "", "", personId);
+            case "ROLE_TEACHER" -> studentLeaveRepository.getStudentLeaveList(-1, search, "", userName, null);
+            case "ROLE_ADMIN" -> studentLeaveRepository.getStudentLeaveList(state, search, "", "", null);
             default -> null;
         };
         
