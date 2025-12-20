@@ -301,7 +301,7 @@ public class BaseService {
     }
 
 
-    public DataResponse uploadPhoto(byte[] barr,String remoteFile) {
+    /*public DataResponse uploadPhoto(byte[] barr,String remoteFile) {
         try {
             OutputStream os = new FileOutputStream(new File(attachFolder + remoteFile));
             os.write(barr);
@@ -310,7 +310,37 @@ public class BaseService {
         } catch (Exception e) {
             return CommonMethod.getReturnMessageError("上传错误");
         }
+    }*/
+    public DataResponse uploadPhoto(byte[] barr, String remoteFile) {
+        try {
+            File destFile = new File(attachFolder + remoteFile);
+
+            // 日志：看 remoteFile 和最终绝对路径
+            log.info("uploadPhoto remoteFile={}, absPath={}", remoteFile, destFile.getAbsolutePath());
+
+            // 关键：确保父目录存在（例如 D:\teach-2025\photo\）
+            File parentDir = destFile.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                boolean ok = parentDir.mkdirs();
+                log.info("uploadPhoto mkdirs {}, result={}", parentDir.getAbsolutePath(), ok);
+            }
+
+            try (OutputStream os = new FileOutputStream(destFile)) {
+                os.write(barr);
+            }
+
+            log.info("uploadPhoto saved? exists={}, len={}",
+                    destFile.exists(),
+                    destFile.exists() ? destFile.length() : -1);
+
+            return CommonMethod.getReturnMessageOK();
+        } catch (Exception e) {
+            log.error("uploadPhoto error", e);
+            return CommonMethod.getReturnMessageError("上传错误");
+        }
     }
+
+
     public ResponseEntity<StreamingResponseBody> getBlobByteData(DataRequest dataRequest) {
         Integer personId = dataRequest.getInteger("personId");
         try {
@@ -396,57 +426,85 @@ public class BaseService {
 
 
 
-    //  Web 请求
+//  Web 请求
     public DataResponse getPhotoImageStr(DataRequest dataRequest) {
         String fileName = dataRequest.getString("fileName");
-        String str = "";
         try {
             File file = new File(attachFolder + fileName);
-            int len = (int) file.length();
-            byte[] data = new byte[len];
-            FileInputStream in = new FileInputStream(file);
-            len = in.read(data);
-            in.close();
-            String imgStr = "data:image/png;base64,";
-            String s = new String(Base64.getEncoder().encode(data));
-            imgStr = imgStr + s;
+
+            // 日志：确认前端传的 fileName 和最终定位的路径
+            log.info("getPhotoImageStr fileName={}, absPath={}, exists={}",
+                    fileName, file.getAbsolutePath(), file.exists());
+
+            // 文件不存在时，直接返回空字符串（前端不要弹红字）
+            if (!file.exists() || !file.isFile()) {
+                return CommonMethod.getReturnData("");
+            }
+
+            byte[] data = new byte[(int) file.length()];
+            try (FileInputStream in = new FileInputStream(file)) {
+                in.read(data);
+            }
+
+            String imgStr = "data:image/png;base64," + Base64.getEncoder().encodeToString(data);
             return CommonMethod.getReturnData(imgStr);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("getPhotoImageStr error", e);
+            return CommonMethod.getReturnMessageError("下载错误！");
         }
-        return CommonMethod.getReturnMessageError("下载错误！");
     }
+
 
     public DataResponse uploadPhotoWeb(Map<String,Object> pars, MultipartFile file) {
         try {
             String remoteFile = CommonMethod.getString(pars, "remoteFile");
-            InputStream in = file.getInputStream();
-            int size = (int) file.getSize();
-            byte[] data = new byte[size];
-            int len =  in.read(data);
-            in.close();
-            OutputStream os = new FileOutputStream(new File(attachFolder + remoteFile));
-            os.write(data);
-            os.close();
+            File destFile = new File(attachFolder + remoteFile);
+
+            // ✅ 日志：看 remoteFile 和最终绝对路径
+            log.info("uploadPhotoWeb remoteFile={}, absPath={}", remoteFile, destFile.getAbsolutePath());
+
+            // ✅ 关键：创建父目录 D:\teach-2025\photo\
+            File parentDir = destFile.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                boolean ok = parentDir.mkdirs();
+                log.info("uploadPhotoWeb mkdirs {}, result={}", parentDir.getAbsolutePath(), ok);
+            }
+
+            // ✅ 写文件（用流式拷贝，别一次性读到 byte[] 里）
+            try (InputStream in = file.getInputStream();
+                 OutputStream os = new FileOutputStream(destFile)) {
+
+                byte[] buffer = new byte[8192];
+                int len;
+                while ((len = in.read(buffer)) != -1) {
+                    os.write(buffer, 0, len);
+                }
+            }
+
+            // ✅ 日志：确认写完真的存在、大小是多少
+            log.info("uploadPhotoWeb saved? exists={}, len={}",
+                    destFile.exists(),
+                    destFile.exists() ? destFile.length() : -1);
+
             return CommonMethod.getReturnMessageOK();
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("uploadPhotoWeb error", e);
+            return CommonMethod.getReturnMessageError("上传错误");
         }
-        return CommonMethod.getReturnMessageOK();
     }
+
     public DataResponse uploadPhotoBlobWeb(Map<String,Object> pars, MultipartFile file) {
         try {
             String personId = CommonMethod.getString(pars, "remoteFile");
-            InputStream in = file.getInputStream();
-            int size = (int) file.getSize();
-            byte[] data = new byte[size];
-            int len =  in.read(data);
-            in.close();
-            return uploadPhotoBlob(data,personId);
+
+            try (InputStream in = file.getInputStream()) {
+                byte[] data = in.readAllBytes();
+                return uploadPhotoBlob(data, personId);
+            }
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("uploadPhotoBlobWeb error", e);
+            return CommonMethod.getReturnMessageError("上传错误");
         }
-        return CommonMethod.getReturnMessageOK();
     }
 
 }
