@@ -58,6 +58,8 @@ public class StudentLeaveService {
             case "ROLE_ADMIN" -> studentLeaveRepository.getStudentLeaveList(state, search, "", "");
             default -> null;
         };
+        System.out.println(">>> slList size = " + (slList == null ? 0 : slList.size()));
+
         List<Map<String, Object>> dataList = new ArrayList<>();
         Map<String, Object> map;
         Student s;
@@ -72,7 +74,6 @@ public class StudentLeaveService {
                 map.put("studentNum", s.getPerson().getNum());
                 map.put("studentName", s.getPerson().getName());
                 map.put("studentId", s.getPersonId());
-                map.put("teacherName", t.getPerson().getNum() + t.getPerson().getName());
                 map.put("state", sl.getState());
                 map.put("stateName", di.getDictionaryLabelByValue("SHZTM", sl.getState()+""));
                 map.put("reason", sl.getReason());
@@ -80,8 +81,12 @@ public class StudentLeaveService {
                 map.put("leaveEndDate", sl.getLeaveEndDate());
                 map.put("attachment", sl.getAttachment());
                 map.put("adminComment", sl.getAdminComment());
-                map.put("teacherId", t.getPersonId());
-                map.put("teacherComment", sl.getTeacherComment());
+                map.put("teacherName",
+                        t == null ? "" : (t.getPerson().getNum() + t.getPerson().getName()));
+                map.put("teacherId",
+                        t == null ? null : t.getPersonId());
+
+
                 dataList.add(map);
             }
         }
